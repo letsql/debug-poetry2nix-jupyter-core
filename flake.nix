@@ -16,10 +16,16 @@
         # see https://github.com/nix-community/poetry2nix/tree/master#api for more functions and examples.
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
+        python' = pkgs.python310;
+        myapp = mkPoetryApplication {
+          projectDir = ./.;
+          preferWheels = true;
+          python = python';
+        };
       in
       {
         packages = {
-          myapp = mkPoetryApplication { projectDir = self; };
+          inherit myapp;
           default = self.packages.${system}.myapp;
         };
 
@@ -38,7 +44,10 @@
         #
         # Use this shell for changes to pyproject.toml and poetry.lock.
         devShells.poetry = pkgs.mkShell {
-          packages = [ pkgs.poetry ];
+          packages = [
+            pkgs.poetry
+            python'
+          ];
         };
       });
 }
